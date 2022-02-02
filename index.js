@@ -14,7 +14,7 @@ const app = express();
 app.get("/", 
     (request, response, next) => 
     {
-        response.send("Hello world");
+        response.send("Hello Node");
     })
 // Criar serviço p/ o Express ouvir:
 
