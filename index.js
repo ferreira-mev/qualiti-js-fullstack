@@ -1,5 +1,5 @@
 // const express = require("express");  // common JS
-import express from "express";  // ES Modules
+import express, { response } from "express";  // ES Modules
 
 // COMMON JS ->
 // IMPORT > const express = require("express")
@@ -11,10 +11,46 @@ import express from "express";  // ES Modules
 
 const app = express();
 
+let users = [
+    {
+        id: 1,
+        name: "Eduarda Ferreira",
+        email: "dudz@dudz.com"
+        
+    },
+    {
+        id: 2,
+        name: "Zé Zin",
+        email: "ziin@hotmail.com"
+        
+    }
+]
+
 app.get("/api/user", 
     (request, response, next) => 
     {
-        response.send("Hello GET");
+        response.send(users);
+    })
+
+app.get("/api/user/:id", 
+    (request, response, next) => 
+    {
+        const id = Number(request.params.id);  // normalização
+        const ans = users.find((user, index, array) =>
+        {
+            return user.id === id;
+        });
+
+        if (ans !== undefined)
+        {
+            response.send(ans);
+        }
+        else
+        {
+            response.status(404).send("User not found");
+        }
+
+        
     })
 
 app.post("/api/user", 
