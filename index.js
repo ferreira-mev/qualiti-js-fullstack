@@ -36,20 +36,15 @@ app.get("/api/user/:id",
     (request, response, next) => 
     {
         const id = Number(request.params.id);  // normalização
-        const ans = users.find((user, index, array) =>
-        {
-            return user.id === id;
-        });
+        const user = users.find(({id}) => user.id === id);
+        // desestruturou o 1o parâmetro (user)
 
-        if (ans !== undefined)
+        if (user)
         {
-            response.send(ans);
-        }
-        else
-        {
-            response.status(404).send("User not found");
+            return response.send(user);
         }
 
+        return response.status(404).send("User not found");
         
     })
 
