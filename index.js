@@ -14,8 +14,29 @@ const app = express();
 app.get("/", 
     (request, response, next) => 
     {
-        response.send("Hello Node");
+        response.send("Hello GET");
     })
+
+app.post("/", 
+    (request, response, next) => 
+    {
+        response.send("Hello POST");
+    })
+
+app.put("/", 
+    (request, response, next) => 
+    {
+        response.send("Hello PUT");
+    })
+
+app.delete("/", 
+    (request, response, next) => 
+    {
+        response.status(401).send("Hello DELETE");
+    })
+
+// Segundo o Keven, isso já é um REST
+
 // Criar serviço p/ o Express ouvir:
 
 app.listen(3000, () => {console.log("Server running on port 3000");});
