@@ -1,5 +1,6 @@
 // const express = require("express");  // common JS
 import express, { response } from "express";  // ES Modules
+import crypto from "crypto";
 
 // COMMON JS ->
 // IMPORT > const express = require("express")
@@ -10,6 +11,8 @@ import express, { response } from "express";  // ES Modules
 // EXPORT -> export { express: 123 } 
 
 const app = express();
+
+app.use(express.json());  // middleware
 
 let users = [
     {
@@ -49,11 +52,31 @@ app.get("/api/user/:id",
     })
 
 app.post("/api/user", 
-    (request, response, next) => 
+    (request, response) => 
     {
-        console.log(request.body);
-        response.send(request);
+        // const user = {...request.body, id: crypto.randomUUID()};
+        // Não tendo esquema, BD n relac aceita qqr chave que passe
+        const user = 
+        {
+            name: request.body.name, 
+            email: request.body.email,
+            id: crypto.randomUUID()
+        };
+        console.log(user);
+        users.push(user);
+        response.send(users);
     })
+
+/* P/ simular POST:
+{
+    "name": "Keven Leone",
+    "email": "keven@leone.com"
+}
+
+
+*/
+
+
 
 app.put("/api/user", 
     (request, response, next) => 
