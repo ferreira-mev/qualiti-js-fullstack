@@ -11,25 +11,25 @@ import express from "express";  // ES Modules
 
 const app = express();
 
-app.get("/", 
+app.get("/api/user", 
     (request, response, next) => 
     {
         response.send("Hello GET");
     })
 
-app.post("/", 
+app.post("/api/user", 
     (request, response, next) => 
     {
         response.send("Hello POST");
     })
 
-app.put("/", 
+app.put("/api/user", 
     (request, response, next) => 
     {
         response.send("Hello PUT");
     })
 
-app.delete("/", 
+app.delete("/api/user", 
     (request, response, next) => 
     {
         response.status(401).send("Hello DELETE");
