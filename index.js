@@ -36,7 +36,7 @@ app.get("/api/user/:id",
     (request, response, next) => 
     {
         const id = Number(request.params.id);  // normalização
-        const user = users.find(({id}) => user.id === id);
+        const user = users.find(({id: uid}) => uid === id);
         // desestruturou o 1o parâmetro (user)
 
         if (user)
@@ -51,7 +51,8 @@ app.get("/api/user/:id",
 app.post("/api/user", 
     (request, response, next) => 
     {
-        response.send("Hello POST");
+        console.log(request.body);
+        response.send(request);
     })
 
 app.put("/api/user", 
