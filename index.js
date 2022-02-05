@@ -14,20 +14,14 @@ const app = express();
 app.use(express.json());  // middleware
 
 
-function idSearch(requestParams)
-/* Recebe como argumento um objeto request.params associado a uma
-requisição HTTP.
-
-Retorna o índice, na lista de usuários, do usuário com id igual ao 
+function idSearch(id)
+/* Retorna o índice, na lista de usuários, do usuário com id igual ao 
 parâmetro id da requisição. Se esta não incluir um parâmetro id, ou se 
 ele for inválido ou inexistente, retorna -1. */
 {
     const id = String(requestParams.id);
     
-    return id ? users.findIndex(({id: uid}) => uid === id) : -1
-    // bastaria retornar o retorno de findIndex, mas estou me precavendo
-    // de uma cascata de erros caso haja algum registro inválido com id 
-    // undefined
+    return users.findIndex(({id: uid}) => uid === id)
 }
 
 
@@ -54,7 +48,7 @@ app.get("/api/user",
 app.get("/api/user/:id", 
     (request, response, next) => 
     {
-        const userIndex = idSearch(request.params);
+        const userIndex = idSearch(request.params.id);
 
         if (userIndex > -1)  // usuário encontrado
         {
@@ -90,9 +84,6 @@ app.post("/api/user",
     "email": "joana.silva@abc.net"
 }
 */
-
-
-// HW: Fazer o PUT e o DELETE (p/ entregar)
 
 // Atualiza um valor:
 // (HW: Retornar usuário atualizado ou 404 com mensagem)
