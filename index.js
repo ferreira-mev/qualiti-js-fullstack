@@ -1,8 +1,7 @@
-// const express = require("express");  // common JS
-import express, { response } from "express";  // ES Modules
-import crypto from "crypto";
+import express, { response } from "express";
+import crypto from "crypto";  // geração de UUIDs
 
-// COMMON JS ->
+// COMMON JS
 // IMPORT > const express = require("express")
 // EXPORT -> module.export = { express: 123 }
 
@@ -18,14 +17,13 @@ let users = [
     {
         id: 1,
         name: "Eduarda Ferreira",
-        email: "dudz@dudz.com"
+        email: "eduarda@ferreira.com"
         
     },
     {
         id: 2,
-        name: "Zé Zin",
-        email: "ziin@hotmail.com"
-        
+        name: "Keven Leone",
+        email: "keven@leone.com"
     }
 ]
 
@@ -55,22 +53,25 @@ app.post("/api/user",
     (request, response) => 
     {
         // const user = {...request.body, id: crypto.randomUUID()};
-        // Não tendo esquema, BD n relac aceita qqr chave que passe
+        // Não tendo esquema, BD não relacional aceita qqr chave que 
+        // seja passada; melhor ser explícito:
+
         const user = 
         {
             name: request.body.name, 
             email: request.body.email,
             id: crypto.randomUUID()
         };
-        console.log(user);
+
+        // console.log(user);
         users.push(user);
         response.send(users);
     })
 
 /* P/ simular POST:
 {
-    "name": "Keven Leone",
-    "email": "keven@leone.com"
+    "name": "Joana Silva",
+    "email": "joana.silva@abc.net"
 }
 */
 
@@ -92,9 +93,5 @@ app.delete("/api/user",
 // Segundo o Keven, isso já é um REST
 
 // Criar serviço p/ o Express ouvir:
-
 app.listen(3000, () => {console.log("Server running on port 3000");});
-// esse log é do lado do servidor, não aparece no browser
-
-// Próx aula: vamos dar refactor p/ usar MongoDB
-// Pesquisar Mongo Atlas, NoSQL Booster for MongoDB
+// (esse log é do lado do servidor, não aparece no browser)
