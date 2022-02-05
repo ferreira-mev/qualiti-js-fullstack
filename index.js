@@ -13,6 +13,22 @@ const app = express();
 
 app.use(express.json());  // middleware
 
+
+function normalizedIdSearch(requestParams)
+/* Recebe como argumento um objeto request.params associado a uma
+requisição HTTP.
+
+Retorna o índice, na lista de usuários, do usuário com id igual ao 
+parâmetro id da requisição. Se esta não incluir um parâmetro id, ou se 
+ele for inválido (ex: não numérico) ou inexistente, retorna -1. */
+{
+    const id = Number(requestParams);
+    const userIndex = users.findIndex(({id: uid}) => uid === id);
+    
+    return userIndex;
+}
+
+
 let users = [
     {
         id: 1,
@@ -36,13 +52,11 @@ app.get("/api/user",
 app.get("/api/user/:id", 
     (request, response, next) => 
     {
-        const id = Number(request.params.id);  // normalização
-        const user = users.find(({id: uid}) => uid === id);
-        // desestruturou o 1o parâmetro (user)
+        const userIndex = normalizedIdSearch(request.params.id);
 
-        if (user)
+        if (userIndex > -1)  // usuário encontrado
         {
-            return response.send(user);
+            return response.send(users[userIndex]);
         }
 
         return response.status(404).send("User not found");
@@ -68,7 +82,7 @@ app.post("/api/user",
         response.send(users);
     })
 
-/* P/ simular POST:
+/* P/ simular POST no Postman:
 {
     "name": "Joana Silva",
     "email": "joana.silva@abc.net"
@@ -78,19 +92,21 @@ app.post("/api/user",
 // HW: Fazer o PUT e o DELETE (p/ entregar)
 
 // Atualiza um valor:
+// (HW: Retornar usuário atualizado ou 404 com mensagem)
 app.put("/api/user/:id", 
     (request, response, next) => 
     {
         response.send("Hello PUT");
     })
 
-app.delete("/api/user", 
+// (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
+app.delete("/api/user:id", 
     (request, response, next) => 
     {
         response.status(401).send("Hello DELETE");
     })
 
-// Segundo o Keven, isso já é um REST
+// Segundo o Keven, isso já é REST
 
 // Criar serviço p/ o Express ouvir:
 app.listen(3000, () => {console.log("Server running on port 3000");});
