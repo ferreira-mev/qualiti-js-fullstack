@@ -14,30 +14,32 @@ const app = express();
 app.use(express.json());  // middleware
 
 
-function normalizedIdSearch(requestParams)
+function idSearch(requestParams)
 /* Recebe como argumento um objeto request.params associado a uma
 requisição HTTP.
 
 Retorna o índice, na lista de usuários, do usuário com id igual ao 
 parâmetro id da requisição. Se esta não incluir um parâmetro id, ou se 
-ele for inválido (ex: não numérico) ou inexistente, retorna -1. */
+ele for inválido ou inexistente, retorna -1. */
 {
-    const id = Number(requestParams);
-    const userIndex = users.findIndex(({id: uid}) => uid === id);
+    const id = String(requestParams.id);
     
-    return userIndex;
+    return id ? users.findIndex(({id: uid}) => uid === id) : -1
+    // bastaria retornar o retorno de findIndex, mas estou me precavendo
+    // de uma cascata de erros caso haja algum registro inválido com id 
+    // undefined
 }
 
 
 let users = [
     {
-        id: 1,
+        id: "1",
         name: "Eduarda Ferreira",
         email: "eduarda@ferreira.com"
         
     },
     {
-        id: 2,
+        id: "2",
         name: "Keven Leone",
         email: "keven@leone.com"
     }
@@ -52,7 +54,7 @@ app.get("/api/user",
 app.get("/api/user/:id", 
     (request, response, next) => 
     {
-        const userIndex = normalizedIdSearch(request.params.id);
+        const userIndex = idSearch(request.params);
 
         if (userIndex > -1)  // usuário encontrado
         {
@@ -97,7 +99,17 @@ app.post("/api/user",
 app.put("/api/user", 
     (request, response, next) => 
     {
-        response.send("Hello PUT");
+        const userIndex = idSearch(request.body.id);
+
+        if (userIndex > -1)  // usuário encontrado
+        {
+            users[userIndex].name = request.body.name;
+            users[userIndex].email = request.body.email;
+
+            return response.send(users[userIndex]);
+        }
+
+        return response.status(404).send("User not found");
     })
 
 // (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
