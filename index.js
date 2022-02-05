@@ -19,9 +19,7 @@ function idSearch(id)
 parâmetro id da requisição. Se esta não incluir um parâmetro id, ou se 
 ele for inválido ou inexistente, retorna -1. */
 {
-    const id = String(requestParams.id);
-    
-    return users.findIndex(({id: uid}) => uid === id)
+    return users.findIndex(({id: uid}) => uid === String(id));
 }
 
 
@@ -73,7 +71,6 @@ app.post("/api/user",
             id: crypto.randomUUID()
         };
 
-        // console.log(user);
         users.push(user);
         response.send(users);
     })
@@ -107,7 +104,18 @@ app.put("/api/user",
 app.delete("/api/user", 
     (request, response, next) => 
     {
-        response.status(401).send("Hello DELETE");
+        const userIndex = idSearch(request.body.id);
+
+        if (userIndex > -1)  // usuário encontrado
+        {
+            users.splice(userIndex, 1);
+
+            return response.send("User " + request.body.id + " deleted");
+            // (como teve sucesso, retorna 200 por padrão; não precisa
+            // incluir status(200))
+        }
+
+        return response.status(404).send("User not found");
     })
 
 // Segundo o Keven, isso já é REST
