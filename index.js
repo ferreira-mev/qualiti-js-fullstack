@@ -72,13 +72,12 @@ app.post("/api/user",
     "name": "Keven Leone",
     "email": "keven@leone.com"
 }
-
-
 */
 
+// HW: Fazer o PUT e o DELETE (p/ entregar)
 
-
-app.put("/api/user", 
+// Atualiza um valor:
+app.put("/api/user/:id", 
     (request, response, next) => 
     {
         response.send("Hello PUT");
@@ -96,3 +95,6 @@ app.delete("/api/user",
 
 app.listen(3000, () => {console.log("Server running on port 3000");});
 // esse log é do lado do servidor, não aparece no browser
+
+// Próx aula: vamos dar refactor p/ usar MongoDB
+// Pesquisar Mongo Atlas, NoSQL Booster for MongoDB
