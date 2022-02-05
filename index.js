@@ -89,18 +89,19 @@ app.post("/api/user",
 }
 */
 
+
 // HW: Fazer o PUT e o DELETE (p/ entregar)
 
 // Atualiza um valor:
 // (HW: Retornar usuário atualizado ou 404 com mensagem)
-app.put("/api/user/:id", 
+app.put("/api/user", 
     (request, response, next) => 
     {
         response.send("Hello PUT");
     })
 
 // (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
-app.delete("/api/user:id", 
+app.delete("/api/user", 
     (request, response, next) => 
     {
         response.status(401).send("Hello DELETE");
