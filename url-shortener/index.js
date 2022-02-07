@@ -1,8 +1,8 @@
 import express, { response } from "express";
-import crypto from "crypto";  // geração de UUIDs
+import crypto from "crypto";  // para geração de UUIDs
 
 // COMMON JS
-// IMPORT > const express = require("express")
+// IMPORT -> const express = require("express")
 // EXPORT -> module.export = { express: 123 }
 
 // ESMODULES
@@ -20,9 +20,11 @@ parâmetro id da requisição. Se esta não incluir um parâmetro id, ou se
 ele for inválido ou inexistente, retorna -1. */
 {
     return users.findIndex(({id: uid}) => uid === String(id));
+    // (só pra não precisar ficar escrevendo isso :P)
 }
 
 
+// "Minibase de dados" pra testar:
 let users = [
     {
         id: "1",
@@ -37,12 +39,15 @@ let users = [
     }
 ]
 
+// Retorna JSON com todos os usuários:
 app.get("/api/user", 
     (request, response, next) => 
     {
         response.send(users);
     })
 
+// Retorna JSON com o usuário cujo ID é passado como
+// parâmetro na URL, caso haja:
 app.get("/api/user/:id", 
     (request, response, next) => 
     {
@@ -57,10 +62,13 @@ app.get("/api/user/:id",
         
     })
 
+// Insere novo usuário, com ID gerado aleatoriamente:
 app.post("/api/user", 
     (request, response) => 
     {
-        // const user = {...request.body, id: crypto.randomUUID()};
+        // Por que não usar
+        // const user = {...request.body, id: crypto.randomUUID()}; ?
+
         // Não tendo esquema, BD não relacional aceita qqr chave que 
         // seja passada; melhor ser explícito:
 
@@ -75,14 +83,15 @@ app.post("/api/user",
         response.send(users);
     })
 
-/* P/ simular POST no Postman:
+/* Outra entrada, p/ copiar e simular POST no Postman:
 {
     "name": "Joana Silva",
     "email": "joana.silva@abc.net"
 }
 */
 
-// Atualiza um valor:
+// Atualiza a entrada referente ao usuário cujo ID é indicado
+// no body, caso haja:
 // (HW: Retornar usuário atualizado ou 404 com mensagem)
 app.put("/api/user", 
     (request, response, next) => 
@@ -100,6 +109,9 @@ app.put("/api/user",
         return response.status(404).send("User not found");
     })
 
+
+// Remove a entrada referente ao usuário cujo ID é indicado
+// no body, caso haja:
 // (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
 app.delete("/api/user", 
     (request, response, next) => 
@@ -117,8 +129,6 @@ app.delete("/api/user",
 
         return response.status(404).send("User not found");
     })
-
-// Segundo o Keven, isso já é REST
 
 // Criar serviço p/ o Express ouvir:
 app.listen(3000, () => {console.log("Server running on port 3000");});
