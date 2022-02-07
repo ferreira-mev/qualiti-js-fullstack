@@ -2,12 +2,12 @@
   "name": "shortener",
   "version": "1.0.0",
   "description": "Encurtador de links (projeto 1)",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js",
-    "start": "node index.js"
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
   },
   "author": "Duda",
   "license": "ISC",

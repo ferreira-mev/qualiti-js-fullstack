@@ -1,18 +1,4 @@
-import express, { response } from "express";
-import crypto from "crypto";  // para geração de UUIDs
-
-// COMMON JS
-// IMPORT -> const express = require("express")
-// EXPORT -> module.export = { express: 123 }
-
-// ESMODULES
-// IMPORT -> import express from 'express'
-// EXPORT -> export { express: 123 } 
-
-const app = express();
-
-app.use(express.json());  // middleware
-
+import { users } from "../model/UserModel.js";
 
 function idSearch(id)
 /* Retorna o índice, na lista de usuários, do usuário com id igual ao 
@@ -23,33 +9,14 @@ ele for inválido ou inexistente, retorna -1. */
     // (só pra não precisar ficar escrevendo isso :P)
 }
 
-
-// "Minibase de dados" pra testar:
-let users = [
-    {
-        id: "1",
-        name: "Eduarda Ferreira",
-        email: "eduarda@ferreira.com"
-        
-    },
-    {
-        id: "2",
-        name: "Keven Leone",
-        email: "keven@leone.com"
-    }
-]
-
-// Retorna JSON com todos os usuários:
-app.get("/api/user", 
-    (request, response, next) => 
+const controller =
+{
+    index: (request, response) => 
     {
         response.send(users);
-    })
+    },  // getAll
 
-// Retorna JSON com o usuário cujo ID é passado como
-// parâmetro na URL, caso haja:
-app.get("/api/user/:id", 
-    (request, response, next) => 
+    getOne: (request, response) => 
     {
         const userIndex = idSearch(request.params.id);
 
@@ -59,12 +26,8 @@ app.get("/api/user/:id",
         }
 
         return response.status(404).send("User not found");
-        
-    })
-
-// Insere novo usuário, com ID gerado aleatoriamente:
-app.post("/api/user", 
-    (request, response) => 
+    },
+    store: (request, response) => 
     {
         // Por que não usar
         // const user = {...request.body, id: crypto.randomUUID()}; ?
@@ -81,20 +44,9 @@ app.post("/api/user",
 
         users.push(user);
         response.send(users);
-    })
-
-/* Outra entrada, p/ copiar e simular POST no Postman:
-{
-    "name": "Joana Silva",
-    "email": "joana.silva@abc.net"
-}
-*/
-
-// Atualiza a entrada referente ao usuário cujo ID é indicado
-// no body, caso haja:
-// (HW: Retornar usuário atualizado ou 404 com mensagem)
-app.put("/api/user", 
-    (request, response, next) => 
+        
+    }, // POST
+    update: (request, response) => 
     {
         const userIndex = idSearch(request.body.id);
 
@@ -107,14 +59,8 @@ app.put("/api/user",
         }
 
         return response.status(404).send("User not found");
-    })
-
-
-// Remove a entrada referente ao usuário cujo ID é indicado
-// no body, caso haja:
-// (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
-app.delete("/api/user", 
-    (request, response, next) => 
+    },  //PUT
+    remove: (request, response) => 
     {
         const userIndex = idSearch(request.body.id);
 
@@ -128,8 +74,8 @@ app.delete("/api/user",
         }
 
         return response.status(404).send("User not found");
-    })
+    }  // DELETE
 
-// Criar serviço p/ o Express ouvir:
-app.listen(3000, () => {console.log("Server running on port 3000");});
-// (esse log é do lado do servidor, não aparece no browser)
+}
+
+export default controller;
