@@ -6,7 +6,11 @@ import dotenv from "dotenv";
 
 import { users } from "./model/UserModel.js";
 import UserController from "./controller/UserController.js";
-import UserRouter from "./router/UserRouter.js";
+import UserRouter from "./routes/UserRouter.js";
+
+// import { users } from "./model/ShortenerModel.js";
+import ShortenerController from "./controller/ShortenerController.js";
+import ShortenerRouter from "./routes/ShortenerRouter.js";
 
 // COMMON JS
 // IMPORT -> const express = require("express")
@@ -43,7 +47,7 @@ const app = express();
 app.use(express.json());
 // middleware -- intermediário numa requisição
 
-app.use(morgan("combined"));  // biblio de logs
+app.use(morgan("dev"));  // biblio de logs
 
 // P/ definir um:
 // app.use((request, response, next) =>
@@ -55,6 +59,7 @@ app.use(morgan("combined"));  // biblio de logs
 // });
 
 app.use("/api", UserRouter);
+app.use("/api", ShortenerRouter);
 
 // Criar serviço p/ o Express ouvir:
 app.listen(PORT, () => {console.log(`Server running on port ${PORT}`);});
