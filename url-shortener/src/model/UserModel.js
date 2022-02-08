@@ -13,9 +13,4 @@ export const users = [
         name: "Keven Leone",
         email: "keven@leone.com"
     }
-]  // const mesmo? Não vai alterar?
-
-// export { users };
-// caso não tivesse colocado o export acima
-
-export default users;
+];

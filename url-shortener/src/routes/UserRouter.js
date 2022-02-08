@@ -17,7 +17,8 @@ router.post("/user", UserController.store)
 /* Outra entrada, p/ copiar e simular POST no Postman:
 {
     "name": "Joana Silva",
-    "email": 
+    "email": "joana.silva@abc.net"
+}
 */
 
 // Atualiza a entrada referente ao usuário cujo ID é indicado

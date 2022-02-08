@@ -14,7 +14,7 @@ const controller =
     index: (request, response) => 
     {
         response.send(users);
-    },  // getAll
+    },  // getAll (GET)
 
     getOne: (request, response) => 
     {
@@ -26,7 +26,7 @@ const controller =
         }
 
         return response.status(404).send("User not found");
-    },
+    },  // GET
     store: (request, response) => 
     {
         // Por que não usar
@@ -59,7 +59,7 @@ const controller =
         }
 
         return response.status(404).send("User not found");
-    },  //PUT
+    },  // PUT
     remove: (request, response) => 
     {
         const userIndex = idSearch(request.body.id);

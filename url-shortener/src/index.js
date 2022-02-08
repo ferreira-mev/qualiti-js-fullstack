@@ -1,15 +1,10 @@
 import express, { response } from "express";
-import crypto from "crypto";  // para geração de UUIDs
-import morgan from "morgan";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+import crypto from "crypto";  // geração de UUIDs
+import morgan from "morgan";  // logs
+import mongoose from "mongoose";  // conexão com MongoDB
+import dotenv from "dotenv";  // variáveis de ambiente
 
-import { users } from "./model/UserModel.js";
-import UserController from "./controller/UserController.js";
 import UserRouter from "./routes/UserRouter.js";
-
-// import { users } from "./model/ShortenerModel.js";
-import ShortenerController from "./controller/ShortenerController.js";
 import ShortenerRouter from "./routes/ShortenerRouter.js";
 
 // COMMON JS
@@ -27,29 +22,26 @@ dotenv.config();
 const DATABASE_URL = process.env.DATABASE_URL;
 const PORT = process.env.PORT;
 
-mongoose.connect(DATABASE_URL).then
-(
-    () =>
-    {
-        console.log("MongoDB connected");
-    }
-).catch
-(
-    (error) => 
-    {
-        console.log(error);
-    }
-);
-// é uma promise
+mongoose
+    .connect(DATABASE_URL)
+    .then
+    (
+        () => { console.log("MongoDB connected"); }
+    )
+    .catch
+    (
+        (error) => { console.log(error); }
+    );
+// (é uma promise)
 
 const app = express();
 
 app.use(express.json());
 // middleware -- intermediário numa requisição
 
-app.use(morgan("dev"));  // biblio de logs
+app.use(morgan("dev"));
 
-// P/ definir um:
+// P/ definir um middleware:
 // app.use((request, response, next) =>
 // {
 //     console.log(request.method, request.url);
