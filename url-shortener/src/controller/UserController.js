@@ -28,13 +28,14 @@ const controller =
 
         return response.status(404).send("User not found");
     },  // GET
+
     store: (request, response) => 
     {
         // Por que não usar
         // const user = {...request.body, id: crypto.randomUUID()}; ?
 
-        // Não tendo esquema, BD não relacional aceita qqr chave que 
-        // seja passada; melhor ser explícito:
+        // Porque, não tendo esquema, BD não relacional aceita qqr 
+        // chave que seja passada; melhor ser explícito:
 
         const user = 
         {
@@ -47,6 +48,7 @@ const controller =
         response.send(users);
         
     }, // POST
+
     update: (request, response) => 
     {
         const userIndex = idSearch(request.body.id);
@@ -61,6 +63,7 @@ const controller =
 
         return response.status(404).send("User not found");
     },  // PUT
+    
     remove: (request, response) => 
     {
         const userIndex = idSearch(request.body.id);
