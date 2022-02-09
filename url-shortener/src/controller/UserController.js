@@ -10,6 +10,15 @@ ele for inválido ou inexistente, retorna -1. */
     // (só pra não precisar ficar escrevendo isso :P)
 }
 
+function validateUser(body)
+/* Verifica se o JSON do usuário fornecido no corpo de uma requisição
+POST ou PUT contém os campos necessários (nome e email) e retorna um
+booleano conforme o sucesso ou falha da verificação. */
+{
+    if (body.name && body.email) { return true; }
+    return false;
+}
+
 const controller =
 {
     index: (request, response) => 
@@ -37,6 +46,13 @@ const controller =
         // Porque, não tendo esquema, BD não relacional aceita qqr 
         // chave que seja passada; melhor ser explícito:
 
+        if (!validateUser(request.body))
+        {
+            response.status(400)
+                .send("Incomplete data provided; required fields: name and email");
+            // não sei se Bad Request seria o mais adequado
+        }
+
         const user = 
         {
             name: request.body.name, 
@@ -53,6 +69,13 @@ const controller =
     {
         const userIndex = idSearch(request.params.id);
 
+        if (!validateUser(request.body))
+        {
+            response.status(400)
+                .send("Incomplete data provided; required fields: name and email. Consider using a PATCH request instead.");
+            // não sei se Bad Request seria o mais adequado
+        }
+
         if (userIndex > -1)  // usuário encontrado
         {
             users[userIndex].name = request.body.name;
@@ -63,6 +86,11 @@ const controller =
 
         return response.status(404).send("User not found");
     },  // PUT
+
+    updateOne: (request, response) =>
+    {
+        response.status(501).send("To be implemented");
+    },  // PATCH
 
     remove: (request, response) => 
     {

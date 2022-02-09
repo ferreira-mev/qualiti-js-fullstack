@@ -26,6 +26,7 @@ router.post("/user", UserController.store);
 // (HW: Retornar usuário atualizado ou 404 com mensagem)
 router.put("/user/:id", UserController.update);
 
+router.patch("/user/:id", UserController.updateOne);
 
 // Remove a entrada referente ao usuário cujo ID é indicado
 // no body, caso haja:
