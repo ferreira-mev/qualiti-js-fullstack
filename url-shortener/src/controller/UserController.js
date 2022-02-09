@@ -1,3 +1,4 @@
+import crypto from "crypto";  // geração de UUIDs
 import { users } from "../model/UserModel.js";
 
 function idSearch(id)

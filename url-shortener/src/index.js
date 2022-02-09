@@ -1,5 +1,4 @@
-import express, { response } from "express";
-import crypto from "crypto";  // geração de UUIDs
+import express from "express";
 import morgan from "morgan";  // logs
 import mongoose from "mongoose";  // conexão com MongoDB
 import dotenv from "dotenv";  // variáveis de ambiente

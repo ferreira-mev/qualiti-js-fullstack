@@ -1,5 +1,3 @@
-import crypto from "crypto";
-
 // "Minibase de dados" pra testar:
 export const users = [
     {
@@ -14,3 +12,7 @@ export const users = [
         email: "keven@leone.com"
     }
 ];
+
+// Estou inicializando com IDs bobos aqui em vez de gerar
+// pelo crypto.randomUUID() para facilitar a testagem do GET,
+// PUT e DELETE
