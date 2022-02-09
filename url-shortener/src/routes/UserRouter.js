@@ -24,12 +24,12 @@ router.post("/user", UserController.store);
 // Atualiza a entrada referente ao usuário cujo ID é indicado
 // no body, caso haja:
 // (HW: Retornar usuário atualizado ou 404 com mensagem)
-router.put("/user", UserController.update);
+router.put("/user/:id", UserController.update);
 
 
 // Remove a entrada referente ao usuário cujo ID é indicado
 // no body, caso haja:
 // (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
-router.delete("/user", UserController.remove);
+router.delete("/user/:id", UserController.remove);
 
 export default router;

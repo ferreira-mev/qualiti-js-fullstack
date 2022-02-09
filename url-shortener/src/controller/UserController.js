@@ -51,7 +51,7 @@ const controller =
 
     update: (request, response) => 
     {
-        const userIndex = idSearch(request.body.id);
+        const userIndex = idSearch(request.params.id);
 
         if (userIndex > -1)  // usuário encontrado
         {
@@ -63,16 +63,16 @@ const controller =
 
         return response.status(404).send("User not found");
     },  // PUT
-    
+
     remove: (request, response) => 
     {
-        const userIndex = idSearch(request.body.id);
+        const userIndex = idSearch(request.params.id);
 
         if (userIndex > -1)  // usuário encontrado
         {
             users.splice(userIndex, 1);
 
-            return response.send("User " + request.body.id + " deleted");
+            return response.send("User " + request.params.id + " deleted");
             // (como teve sucesso, retorna 200 por padrão; não precisa
             // incluir status(200))
         }
