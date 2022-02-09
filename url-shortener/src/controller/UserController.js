@@ -92,8 +92,28 @@ const controller =
 
     updateOne: (request, response) =>
     {
-        // (cuidado com o assign p/ não sobrescrever o ID)
-        return response.status(501).send("To be implemented");
+        const userIndex = idSearch(request.params.id);
+
+        if (userIndex == -1)  // usuário não encontrado
+        {
+            return response.status(404).send("User not found");
+        }
+
+        request.body.id = users[userIndex].id;
+        // P/ não sobrescrever o ID caso o usuário forneça um atributo
+        // com essa chave (estou presumindo que alterar externamente o 
+        // ID não seria permitido)
+
+        request.body.name = request.body.name || users[userIndex].name;
+        request.body.email = request.body.email || users[userIndex].email;
+        // P/ não apagar nome ou email caso o usuário não forneça
+        // novos valores (estou sempre supondo que esses seriam os
+        // atributos mínimos obrigatórios)
+
+        users[userIndex] = Object.assign(users[userIndex], request.body);
+        // P/ copiar inclusive outras propriedades passadas
+
+        return response.send(users[userIndex]);
 
         // E se tivesse só name e email? Eu deveria aceitar, ou sugerir
         // o método PUT nesse caso?

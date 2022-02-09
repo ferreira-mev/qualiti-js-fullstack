@@ -31,7 +31,6 @@ mongoose
     (
         (error) => { console.log(error); }
     );
-// (é uma promise)
 
 const app = express();
 
