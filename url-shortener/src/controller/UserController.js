@@ -67,8 +67,6 @@ const controller =
 
     update: (request, response) => 
     {
-        const userIndex = idSearch(request.params.id);
-
         if (!validateUser(request.body))
         {
             response.status(400)
@@ -76,36 +74,47 @@ const controller =
             // não sei se Bad Request seria o mais adequado
         }
 
-        if (userIndex > -1)  // usuário encontrado
-        {
-            users[userIndex].name = request.body.name;
-            users[userIndex].email = request.body.email;
+        const userIndex = idSearch(request.params.id);
 
-            return response.send(users[userIndex]);
+        if (userIndex == -1)  // usuário não encontrado
+        {
+            return response.status(404).send("User not found");
         }
 
-        return response.status(404).send("User not found");
+        users[userIndex].name = request.body.name;
+        users[userIndex].email = request.body.email;
+
+        // E se tivesse outros campos? Eu deveria aceitar, ou foge
+        // ao escopo do PUT?
+
+        return response.send(users[userIndex]);
     },  // PUT
 
     updateOne: (request, response) =>
     {
-        response.status(501).send("To be implemented");
+        // (cuidado com o assign p/ não sobrescrever o ID)
+        return response.status(501).send("To be implemented");
+
+        // E se tivesse só name e email? Eu deveria aceitar, ou sugerir
+        // o método PUT nesse caso?
+
     },  // PATCH
 
     remove: (request, response) => 
     {
         const userIndex = idSearch(request.params.id);
 
-        if (userIndex > -1)  // usuário encontrado
+        if (userIndex == -1)  // usuário não encontrado
         {
-            users.splice(userIndex, 1);
-
-            return response.send("User " + request.params.id + " deleted");
-            // (como teve sucesso, retorna 200 por padrão; não precisa
-            // incluir status(200))
+            return response.status(404).send("User not found");
         }
 
-        return response.status(404).send("User not found");
+        users.splice(userIndex, 1);
+
+        return response.send("User " + request.params.id + " deleted");
+        // (como teve sucesso, retorna 200 por padrão; não precisa
+        // incluir status(200))
+        
     }  // DELETE
 
 }
