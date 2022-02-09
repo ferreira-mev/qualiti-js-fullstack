@@ -73,6 +73,8 @@ const controller =
                 .send("Incomplete data provided; required fields: name and email. Consider using a PATCH request instead.");
             // não sei se Bad Request seria o mais adequado
         }
+        // Incluí essa verificação porque foi dito em aula que o método
+        // PUT deveria atualizar todos os campos
 
         const userIndex = idSearch(request.params.id);
 
@@ -86,6 +88,10 @@ const controller =
 
         // E se tivesse outros campos? Eu deveria aceitar, ou foge
         // ao escopo do PUT?
+
+        // Reciprocamente: se novos campos houvessem sido adicionados
+        // posteriormente com o PATCH, o PUT também deveria passar a
+        // exigir a atualização deles?
 
         return response.send(users[userIndex]);
     },  // PUT
