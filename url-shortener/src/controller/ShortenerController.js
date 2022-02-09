@@ -2,7 +2,7 @@ import ShortenerModel from "../model/ShortenerModel.js";
 
 class ShortenerController
 {
-    async index (request, response)
+    async index(request, response)
     {
         const shorteners = await ShortenerModel.find().lean();
         // esse find é uma promise
@@ -10,9 +10,9 @@ class ShortenerController
         response.json({shorteners});
     }
 
-    getOne (request, response) {}
+    getOne(request, response) {}
 
-    async store (request, response)
+    async store(request, response)
     {
         const body = request.body;
 
@@ -21,8 +21,8 @@ class ShortenerController
         response.json({shortener});
     }
 
-    update (request, response) {}
-    remove (request, response) {}
+    update(request, response) {}
+    remove(request, response) {}
 }
 
 export default ShortenerController;
