@@ -17,6 +17,12 @@ import ShortenerRouter from "./routes/ShortenerRouter.js";
 // Não é boa prática colocar informações sensíveis,
 // como o endereço do banco, hardcoded; movemos para o .env
 dotenv.config();
+// Obs: A documentação do dotenv diz que o arquivo .env deve
+// estar na raiz do projeto; por experiência, parece que ele só
+// é lido se eu rodar o nodemon a partir do que diretório que
+// contém o .env, independentemente de como esteja a estrutura
+// dos diretórios, então acho que a "raiz do projeto" é definida
+// dessa forma.
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const PORT = process.env.PORT;
@@ -49,8 +55,10 @@ app.use(morgan("dev"));
 // });
 
 app.use("/api", UserRouter);
-app.use("/api", ShortenerRouter);
+app.use(ShortenerRouter);
 
 // Criar serviço p/ o Express ouvir:
 app.listen(PORT, () => {console.log(`Server running on port ${PORT}`);});
 // (esse log é do lado do servidor, não aparece no browser)
+
+// P/ conseguir acessar por um "alias": /etc/hosts

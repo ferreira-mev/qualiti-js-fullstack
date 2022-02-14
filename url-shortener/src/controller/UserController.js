@@ -21,11 +21,14 @@ booleano conforme o sucesso ou falha da verificação. */
 
 const controller =
 {
+    // Retorna JSON com todos os usuários:
     index: (request, response) => 
     {
         response.send(users);
     },  // getAll (GET)
 
+    // Retorna JSON com o usuário cujo ID é passado como
+    // parâmetro na URL, caso haja:
     getOne: (request, response) => 
     {
         const userIndex = idSearch(request.params.id);
@@ -38,6 +41,7 @@ const controller =
         return response.status(404).send("User not found");
     },  // GET
 
+    // Insere novo usuário, com ID gerado aleatoriamente:
     store: (request, response) => 
     {
         // Por que não usar
@@ -65,6 +69,16 @@ const controller =
         
     }, // POST
 
+    /* Outra entrada, p/ copiar e simular POST no Postman:
+    {
+        "name": "Joana Silva",
+        "email": "joana.silva@abc.net"
+    }
+    */
+
+    // Atualiza a entrada referente ao usuário cujo ID é indicado
+    // no body, caso haja:
+    // (HW: Retornar usuário atualizado ou 404 com mensagem)
     update: (request, response) => 
     {
         if (!validateUser(request.body))
@@ -96,6 +110,9 @@ const controller =
         return response.send(users[userIndex]);
     },  // PUT
 
+    // Remove a entrada referente ao usuário cujo ID é indicado
+    // no body, caso haja:
+    // (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
     updateOne: (request, response) =>
     {
         const userIndex = idSearch(request.params.id);
