@@ -1,5 +1,5 @@
 import crypto from "crypto";  // geração de UUIDs
-import { users } from "../model/UserModel.js";
+import UserModel from "../model/UserModel.js";
 
 function idSearch(id)
 /* Retorna o índice, na lista de usuários, do usuário com id igual ao 
@@ -12,37 +12,50 @@ ele for inválido ou inexistente, retorna -1. */
 
 function validateUser(body)
 /* Verifica se o JSON do usuário fornecido no corpo de uma requisição
-POST ou PUT contém os campos necessários (nome e email) e retorna um
-booleano conforme o sucesso ou falha da verificação. */
+POST ou PUT contém os campos necessários (nome, email e senha) e
+retorna um booleano conforme o sucesso ou falha da verificação. */
 {
-    if (body.name && body.email) { return true; }
+    if (body.name && body.email && body.password) { return true; }
     return false;
 }
 
 const controller =
 {
     // Retorna JSON com todos os usuários:
-    index: (request, response) => 
+    index: async (request, response) => 
     {
-        response.send(users);
+        const users = await UserModel.find().lean();
+
+        response.json({ users });
     },  // getAll (GET)
 
     // Retorna JSON com o usuário cujo ID é passado como
     // parâmetro na URL, caso haja:
-    getOne: (request, response) => 
+    getOne: async (request, response) => 
     {
-        const userIndex = idSearch(request.params.id);
+        const { id } = request.params;
 
-        if (userIndex > -1)  // usuário encontrado
+        try
         {
-            return response.send(users[userIndex]);
-        }
+            const user = await UserModel.findById(id);
 
-        return response.status(404).send("User not found");
+            if (user)
+            {
+                response.json({ user });
+            }
+
+            response.status(404).json({ message: "User not found" });
+        }
+        catch(error)
+        // meio Pokémon, mas é pra não derrubar a aplicação
+        {
+            console.log(error.message);
+            response.status(400).json({ message: "Unexpected error" });
+        } 
     },  // GET
 
     // Insere novo usuário, com ID gerado aleatoriamente:
-    store: (request, response) => 
+    store: async (request, response) => 
     {
         // Por que não usar
         // const user = {...request.body, id: crypto.randomUUID()}; ?
@@ -53,19 +66,22 @@ const controller =
         if (!validateUser(request.body))
         {
             response.status(400)
-                .send("Incomplete data provided; required fields: name and email");
+                .send("Incomplete data provided; required fields: name, email and password");
             // não sei se Bad Request seria o mais adequado
         }
 
-        const user = 
-        {
+        const user = await UserModel.create
+        ({
             name: request.body.name, 
             email: request.body.email,
-            id: crypto.randomUUID()
-        };
+            password: request.body.password,
+            phone: request.body.phone // || []
+            // (não precisa do ou, se não passar é um array
+            // vazio por padrão)
+            // como estamos recebendo o(s) telefone(s)?
+        });
 
-        users.push(user);
-        response.send(users);
+        response.json({ user });
         
     }, // POST
 
@@ -79,26 +95,45 @@ const controller =
     // Atualiza a entrada referente ao usuário cujo ID é indicado
     // no body, caso haja:
     // (HW: Retornar usuário atualizado ou 404 com mensagem)
-    update: (request, response) => 
+    update: async (request, response) => 
     {
         if (!validateUser(request.body))
         {
             response.status(400)
-                .send("Incomplete data provided; required fields: name and email. Consider using a PATCH request instead.");
+                .send("Incomplete data provided; required fields: name, email and password. Consider using a PATCH request instead.");
             // não sei se Bad Request seria o mais adequado
         }
         // Incluí essa verificação porque foi dito em aula que o método
         // PUT deveria atualizar todos os campos
 
-        const userIndex = idSearch(request.params.id);
+        const { id } = request.params;
 
-        if (userIndex == -1)  // usuário não encontrado
+        const { name, email, password, phone } = request.body;
+
+        try
         {
-            return response.status(404).send("User not found");
-        }
+            const user = await ShortenerModel.findByIdAndUpdate
+            (
+                id,
+                {
+                    name,
+                    email,
+                    password,
+                    phone
+                },
+                { new: true }
+                // retorna a versão modificada; cf.
+                // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
+            );
 
-        users[userIndex].name = request.body.name;
-        users[userIndex].email = request.body.email;
+            response.json( { user });
+        }
+        catch(error)
+        // meio Pokémon, mas é pra não derrubar a aplicação
+        {
+            console.log(error.message);
+            response.status(400).json({ message: "Unexpected error" });
+        } 
 
         // E se tivesse outros campos? Eu deveria aceitar, ou foge
         // ao escopo do PUT?
@@ -106,57 +141,65 @@ const controller =
         // Reciprocamente: se novos campos houvessem sido adicionados
         // posteriormente com o PATCH, o PUT também deveria passar a
         // exigir a atualização deles?
-
-        return response.send(users[userIndex]);
     },  // PUT
+
+
+    // updateOne: (request, response) =>
+    // {
+    //     const userIndex = idSearch(request.params.id);
+
+    //     if (userIndex == -1)  // usuário não encontrado
+    //     {
+    //         return response.status(404).send("User not found");
+    //     }
+
+    //     request.body.id = users[userIndex].id;
+    //     // P/ não sobrescrever o ID caso o usuário forneça um atributo
+    //     // com essa chave (estou presumindo que alterar externamente o 
+    //     // ID não seria permitido)
+
+    //     request.body.name = request.body.name || users[userIndex].name;
+    //     request.body.email = request.body.email || users[userIndex].email;
+    //     // P/ não apagar nome ou email caso o usuário não forneça
+    //     // novos valores (estou sempre supondo que esses seriam os
+    //     // atributos mínimos obrigatórios)
+
+    //     users[userIndex] = Object.assign(users[userIndex], request.body);
+    //     // P/ copiar inclusive outras propriedades passadas
+
+    //     return response.send(users[userIndex]);
+
+    //     // E se tivesse só name e email? Eu deveria aceitar, ou sugerir
+    //     // o método PUT nesse caso?
+
+    // },  // PATCH
 
     // Remove a entrada referente ao usuário cujo ID é indicado
     // no body, caso haja:
     // (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
-    updateOne: (request, response) =>
+    remove: async (request, response) => 
     {
-        const userIndex = idSearch(request.params.id);
+        const { id } = request.params;
 
-        if (userIndex == -1)  // usuário não encontrado
+        try
         {
-            return response.status(404).send("User not found");
+            const user = await UserModel.findById(id);
+
+            if (user)
+            {
+                await user.remove();
+                // findByIdAndDelete vs ...Remove?
+
+                return response.json({ message: "User removed" });
+            }
+
+            response.status(404).json({ message: "User not found" });
         }
-
-        request.body.id = users[userIndex].id;
-        // P/ não sobrescrever o ID caso o usuário forneça um atributo
-        // com essa chave (estou presumindo que alterar externamente o 
-        // ID não seria permitido)
-
-        request.body.name = request.body.name || users[userIndex].name;
-        request.body.email = request.body.email || users[userIndex].email;
-        // P/ não apagar nome ou email caso o usuário não forneça
-        // novos valores (estou sempre supondo que esses seriam os
-        // atributos mínimos obrigatórios)
-
-        users[userIndex] = Object.assign(users[userIndex], request.body);
-        // P/ copiar inclusive outras propriedades passadas
-
-        return response.send(users[userIndex]);
-
-        // E se tivesse só name e email? Eu deveria aceitar, ou sugerir
-        // o método PUT nesse caso?
-
-    },  // PATCH
-
-    remove: (request, response) => 
-    {
-        const userIndex = idSearch(request.params.id);
-
-        if (userIndex == -1)  // usuário não encontrado
+        catch(error)
         {
-            return response.status(404).send("User not found");
+            console.log(error.message);
+            response.status(400).json({ message: "Unexpected error" });
         }
-
-        users.splice(userIndex, 1);
-
-        return response.send("User " + request.params.id + " deleted");
-        // (como teve sucesso, retorna 200 por padrão; não precisa
-        // incluir status(200))
         
     }  // DELETE
 
