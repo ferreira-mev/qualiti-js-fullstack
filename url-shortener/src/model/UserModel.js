@@ -1,46 +1,38 @@
 import mongoose from "mongoose";
 
-// "Minibase de dados" pra testar:
-// export const users = [
-//     {
-//         id: "1",
-//         name: "Eduarda Ferreira",
-//         email: "eduarda@ferreira.com"
-        
-//     },
-//     {
-//         id: "2",
-//         name: "Keven Leone",
-//         email: "keven@leone.com"
-//     }
-// ];
+// Tarefa da aula 10: criar esquema com
+// Name, Email, Role: Administrator / User, Password, Created At, Modified At, Phones: 123, 123 
 
-// Estou inicializando com IDs bobos aqui em vez de gerar
-// pelo crypto.randomUUID() para facilitar a testagem do GET,
-// PUT e DELETE
-
-const UserSchema = mongoose.Schema(
+const UserSchema = mongoose.Schema
+(
     {
-      name: { type: String, required: true },
-      email: { type: String, required: true },
-      role: 
-      { 
-          type: String, 
-          required: true, 
-          enum: ["User", "Administrator"],
-          default: "User" 
-    },
-      password: { type: String, required: true },
-      phone: [{ type: String }],
+        name: { type: String, required: true },
+        email: { type: String, required: true, lowercase: true },
+        role: 
+        { 
+            type: String, 
+            required: true, 
+            lowercase: true,
+            enum: ["user", "administrator"],
+            default: "user" 
+        },
+        // (ambas as strings em lowercase pra facilitar comparações)
+        password: { type: String, required: true },
+        phones: [{ type: String }]
+        // Could I use regex here to ensure these contain numbers,
+        // dashes, spaces and parentheses only, or -- better yet --
+        // to specify a format?
     },
     {
-      timestamps: true,
+        timestamps: true,
+        runValidators: true  // por conta da enum
+        // https://github.com/Automattic/mongoose/issues/1974
+        // https://mongoosejs.com/docs/validation.html#update-validators
+        // "Be careful: update validators are off by default 
+        // because they have several caveats." Hmm; like what?
     }
-  );
+);
   
 const UserModel = mongoose.model("user", UserSchema);
-
-
-// Name, Email, Role: Administrator / User, Password, Created At, Modified At, Phones: 123, 123 
 
 export default UserModel;

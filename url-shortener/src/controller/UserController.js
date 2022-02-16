@@ -1,37 +1,31 @@
 import crypto from "crypto";  // geração de UUIDs
 import UserModel from "../model/UserModel.js";
 
-function idSearch(id)
-/* Retorna o índice, na lista de usuários, do usuário com id igual ao 
-parâmetro id da requisição. Se esta não incluir um parâmetro id, ou se 
-ele for inválido ou inexistente, retorna -1. */
+class UserController
 {
-    return users.findIndex(({id: uid}) => uid === String(id));
-    // (só pra não precisar ficar escrevendo isso :P)
-}
+    static reqString = "Incomplete data provided; required fields: name, email and password.";
 
-function validateUser(body)
-/* Verifica se o JSON do usuário fornecido no corpo de uma requisição
-POST ou PUT contém os campos necessários (nome, email e senha) e
-retorna um booleano conforme o sucesso ou falha da verificação. */
-{
-    if (body.name && body.email && body.password) { return true; }
-    return false;
-}
+    static validateUser(body)
+    /* Verifica se o JSON do usuário fornecido no corpo de uma 
+    requisição POST ou PUT contém os campos necessários (nome, email e
+    senha) e retorna um booleano conforme o sucesso ou falha da 
+    verificação. */
+    {
+        if (body.name && body.email && body.password) { return true; }
+        return false;
+    }
 
-const controller =
-{
     // Retorna JSON com todos os usuários:
-    index: async (request, response) => 
+    async index(request, response) 
     {
         const users = await UserModel.find().lean();
 
         response.json({ users });
-    },  // getAll (GET)
+    }  // getAll (GET)
 
     // Retorna JSON com o usuário cujo ID é passado como
     // parâmetro na URL, caso haja:
-    getOne: async (request, response) => 
+    async getOne(request, response) 
     {
         const { id } = request.params;
 
@@ -52,10 +46,10 @@ const controller =
             console.log(error.message);
             response.status(400).json({ message: "Unexpected error" });
         } 
-    },  // GET
+    }  // GET
 
     // Insere novo usuário, com ID gerado aleatoriamente:
-    store: async (request, response) => 
+    async store(request, response) 
     {
         // Por que não usar
         // const user = {...request.body, id: crypto.randomUUID()}; ?
@@ -66,7 +60,7 @@ const controller =
         if (!validateUser(request.body))
         {
             response.status(400)
-                .send("Incomplete data provided; required fields: name, email and password");
+                .send(reqString);
             // não sei se Bad Request seria o mais adequado
         }
 
@@ -75,7 +69,7 @@ const controller =
             name: request.body.name, 
             email: request.body.email,
             password: request.body.password,
-            phone: request.body.phone // || []
+            phones: request.body.phones // || []
             // (não precisa do ou, se não passar é um array
             // vazio por padrão)
             // como estamos recebendo o(s) telefone(s)?
@@ -83,24 +77,17 @@ const controller =
 
         response.json({ user });
         
-    }, // POST
-
-    /* Outra entrada, p/ copiar e simular POST no Postman:
-    {
-        "name": "Joana Silva",
-        "email": "joana.silva@abc.net"
-    }
-    */
+    } // POST
 
     // Atualiza a entrada referente ao usuário cujo ID é indicado
     // no body, caso haja:
     // (HW: Retornar usuário atualizado ou 404 com mensagem)
-    update: async (request, response) => 
+    async update(request, response)
     {
         if (!validateUser(request.body))
         {
             response.status(400)
-                .send("Incomplete data provided; required fields: name, email and password. Consider using a PATCH request instead.");
+                .send(reqString + " Consider using a PATCH request instead.");
             // não sei se Bad Request seria o mais adequado
         }
         // Incluí essa verificação porque foi dito em aula que o método
@@ -108,7 +95,7 @@ const controller =
 
         const { id } = request.params;
 
-        const { name, email, password, phone } = request.body;
+        const { name, email, password, phones } = request.body;
 
         try
         {
@@ -119,7 +106,7 @@ const controller =
                     name,
                     email,
                     password,
-                    phone
+                    phones
                 },
                 { new: true }
                 // retorna a versão modificada; cf.
@@ -141,7 +128,7 @@ const controller =
         // Reciprocamente: se novos campos houvessem sido adicionados
         // posteriormente com o PATCH, o PUT também deveria passar a
         // exigir a atualização deles?
-    },  // PUT
+    }  // PUT
 
 
     // updateOne: (request, response) =>
@@ -177,7 +164,7 @@ const controller =
     // Remove a entrada referente ao usuário cujo ID é indicado
     // no body, caso haja:
     // (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
-    remove: async (request, response) => 
+    async remove(request, response) 
     {
         const { id } = request.params;
 
@@ -205,4 +192,4 @@ const controller =
 
 }
 
-export default controller;
+export default UserController;
