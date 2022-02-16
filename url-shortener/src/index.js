@@ -84,10 +84,9 @@ app.use((error, request, response, next) =>
     if (error.stack) { console.log(error.stack); }
     // nem sempre está disponível
     else { console.log(error.name + ": " + error.message); }
-    // (a stack já começa com essa linha)
+    // (o stack trace já começa com essa linha)
 
-    // Respostas a tipos de erros:
-
+    // Respostas a tipos específicos de erros:
     if (error.message === "User not found" || 
         error.message === "Invalid ID; user not found" ||
         error.message === "Link not found")
@@ -102,7 +101,7 @@ app.use((error, request, response, next) =>
         // Qual seria o código de erro mais adequado aqui?
     }
 
-    // Resposta genérica:
+    // Resposta genérica (o default do switch):
     response.status(500).json({ message: "Unexpected error" });
 });
 

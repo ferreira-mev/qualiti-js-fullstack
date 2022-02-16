@@ -8,7 +8,6 @@ class ShortenerController
     async index(request, response)
     {
         const shortenedLinks = await ShortenerModel.find().lean();
-        // esse find é uma promise
 
         response.json({ shortenedLinks });
     }
@@ -37,10 +36,7 @@ class ShortenerController
             }
             else { next(err); }
         }
-        
 
-        
-        
     }
 
     async store(request, response)
@@ -60,7 +56,6 @@ class ShortenerController
         });
 
         response.json({ shortenedLink });
-        
     }
 
     async update(request, response)
