@@ -1,5 +1,6 @@
 import crypto from "crypto";  // geração de UUIDs
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 import UserModel from "../model/UserModel.js";
 
@@ -154,7 +155,9 @@ class UserController
         // usuário é falha de segurança
         // "Por fins didáticos" (- tio Keven), vamos falhar
 
-        const user = await UserModel.findOne({ "email": email });
+        const user = await UserModel.findOne({ "email": email }).lean();
+        // lean() extrai o que é interno ao mongoose e extrai apenas os
+        // dados
 
         if (!user)
         {
@@ -169,9 +172,28 @@ class UserController
             return response.status(401).json({ message: "Wrong password" });
         }
 
-        return response.json(user);
+        delete user.password;
+
+        const token = jwt.sign(user, "url-shortener");
+        // O token está em base 64 e fica armazenado no cliente, podendo
+        // ser facilmente convertido p/ um formato human readable (ex:
+        // jwt.io); então, não deve conter informações sensíveis como a
+        // senha, mesmo que hasheada com salt.
+
+        // Por outro lado, uma vantagem disso é que essas informações
+        // ficam acessíveis no front-end -- mas, pelo primeiro lado,
+        // quanto mais info, maior o token (é claro).
+
+        // Outro problema de segurança: nosso token atualmente não 
+        // expira.
+
+        return response.send(token);
         
     }
+
+    // (API não costuma ter logout, só front-end)
+    // Agora falta um middleware de controle de acesso para restringir 
+    // determinadas rotas apenas a usuários autenticados
 
 }
 
