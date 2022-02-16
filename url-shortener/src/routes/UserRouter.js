@@ -1,4 +1,7 @@
 import { Router } from "express";
+import expressAsyncErrors from "express-async-errors";
+/* "If you use a Router, you just have to require it at the beginning 
+of each router file" - https://stackoverflow.com/a/59176322/18119360 */
 
 import UserController from "../controller/UserController.js";
 

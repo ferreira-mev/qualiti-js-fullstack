@@ -17,49 +17,49 @@ class ShortenerController
     {
         const { id } = request.params;
 
+        
         try
         {
             const shortenedLink = await ShortenerModel.findById(id);
 
-            if (shortenedLink)
+            if (!shortenedLink)
             {
-                response.json({ shortenedLink });
+                throw Error("Link not found");
             }
 
-            response.status(404).json({ message: "Link not found" });
+            return response.json({ shortenedLink });   
         }
-        catch(error)
-        // meio Pokémon, mas é pra não derrubar a aplicação
+        catch(err)
         {
-            console.log(error.message);
-            response.status(400).json({ message: "Unexpected error" });
-        } 
+            if (err.name === "CastError")
+            {
+                throw Error("Invalid ID; link not found");
+            }
+            else { next(err); }
+        }
+        
+
+        
+        
     }
 
     async store(request, response)
     {
-        try
-        {
-            const { link, name, expirationDate } = request.body;
 
-            const [hash] = crypto.randomUUID().split("-");
+        const { link, name, expirationDate } = request.body;
 
-            const shortenedLink = await ShortenerModel.create
-            ({
-                hash,
-                link,
-                name,
-                expirationDate,
-                metadata: []
-            });
+        const [hash] = crypto.randomUUID().split("-");
 
-            response.json({ shortenedLink });
-        }
-        catch(error)
-        {
-            console.log(error.message);
-            response.status(400).json({ message: "Unexpected error" });
-        }
+        const shortenedLink = await ShortenerModel.create
+        ({
+            hash,
+            link,
+            name,
+            expirationDate,
+            metadata: []
+        });
+
+        response.json({ shortenedLink });
         
     }
 
@@ -83,13 +83,16 @@ class ShortenerController
                 // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
             );
 
+            // O que acontece se não achar? P/ eu usar 404
             response.json( { shortenedLink });
         }
         catch(error)
-        // meio Pokémon, mas é pra não derrubar a aplicação
         {
-            console.log(error.message);
-            response.status(400).json({ message: "Unexpected error" });
+            if (err.name === "CastError")
+            {
+                throw Error("Invalid ID; link not found");
+            }
+            else { next(err); }
         } 
     }
 
@@ -101,26 +104,23 @@ class ShortenerController
         {
             const shortenedLink = await ShortenerModel.findById(id);
 
-            if (shortenedLink)
+            if (!shortenedLink)
             {
-                await shortenedLink.remove();
-                // findByIdAndDelete vs ...Remove?
-
-                return response.json({ message: "Link removed" });
-                /* Um erro ilustrativo: sem o return acima, acontecia
-
-                Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
-
-                (Ele tentava seguir com o response.json abaixo depois de passar por aqui; o lado ruim do if sem else é ter que dar atenção redobrada a essas coisas.)
-                */
+                throw Error("Link not found");
             }
 
-            response.status(404).json({ message: "Link not found" });
+            await shortenedLink.remove();
+            // findByIdAndDelete vs ...Remove?
+
+            return response.json({ message: "Link removed" });
         }
         catch(error)
         {
-            console.log(error.message);
-            response.status(400).json({ message: "Unexpected error" });
+            if (err.name === "CastError")
+            {
+                throw Error("Invalid ID; link not found");
+            }
+            else { next(err); }
         }
     }
 
@@ -140,23 +140,23 @@ class ShortenerController
         const shortenedLink = await ShortenerModel.findOne({ hash });
         // parâmetros a buscar no objeto-argumento
 
-        if (shortenedLink)
+        if (!shortenedLink)
         {
-            if (shortenedLink.expired)
-            {
-                return response.status(400).json({ message: "Sorry, this link had expired" });
-            }
-
-            shortenedLink.hits++;
-            shortenedLink.metadata.push(metadata);
-
-            await shortenedLink.save();
-
-            return response.redirect(shortenedLink.link);
+            throw Error("Link not found");
         }
 
-        response.status(404).json({ message: "Not found" });
-        
+        if (shortenedLink.expired)
+        {
+            throw Error("Sorry, this link had expired");
+        }
+
+        shortenedLink.hits++;
+        shortenedLink.metadata.push(metadata);
+
+        await shortenedLink.save();
+
+        return response.redirect(shortenedLink.link);
+           
     }
 }
 

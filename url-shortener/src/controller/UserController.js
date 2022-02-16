@@ -1,20 +1,10 @@
 import crypto from "crypto";  // geração de UUIDs
+import { nextTick } from "process";
+
 import UserModel from "../model/UserModel.js";
 
 class UserController
 {
-    static reqString = "Incomplete data provided; required fields: name, email and password.";
-
-    static validateUser(body)
-    /* Verifica se o JSON do usuário fornecido no corpo de uma 
-    requisição POST ou PUT contém os campos necessários (nome, email e
-    senha) e retorna um booleano conforme o sucesso ou falha da 
-    verificação. */
-    {
-        if (body.name && body.email && body.password) { return true; }
-        return false;
-    }
-
     // Retorna JSON com todos os usuários:
     async index(request, response) 
     {
@@ -28,24 +18,25 @@ class UserController
     async getOne(request, response) 
     {
         const { id } = request.params;
-
+        
         try
         {
             const user = await UserModel.findById(id);
-
-            if (user)
-            {
-                response.json({ user });
-            }
-
-            response.status(404).json({ message: "User not found" });
         }
-        catch(error)
-        // meio Pokémon, mas é pra não derrubar a aplicação
+        catch(err)
         {
-            console.log(error.message);
-            response.status(400).json({ message: "Unexpected error" });
-        } 
+            if (err.name === "CastError")
+            {
+                throw Error("Invalid ID; user not found");
+            }
+        }
+
+        if (!user)
+        {
+            throw Error("User not found");
+        }
+
+        response.json({ user });
     }  // GET
 
     // Insere novo usuário, com ID gerado aleatoriamente:
@@ -56,13 +47,6 @@ class UserController
 
         // Porque, não tendo esquema, BD não relacional aceita qqr 
         // chave que seja passada; melhor ser explícito:
-
-        if (!validateUser(request.body))
-        {
-            response.status(400)
-                .send(reqString);
-            // não sei se Bad Request seria o mais adequado
-        }
 
         const user = await UserModel.create
         ({
@@ -82,16 +66,11 @@ class UserController
     // Atualiza a entrada referente ao usuário cujo ID é indicado
     // no body, caso haja:
     // (HW: Retornar usuário atualizado ou 404 com mensagem)
-    async update(request, response)
+    async update(request, response, next)
     {
-        if (!validateUser(request.body))
-        {
-            response.status(400)
-                .send(reqString + " Consider using a PATCH request instead.");
-            // não sei se Bad Request seria o mais adequado
-        }
-        // Incluí essa verificação porque foi dito em aula que o método
-        // PUT deveria atualizar todos os campos
+        // Obs: foi dito em aula que o método PUT deveria atualizar 
+        // todos os campos; para atualizar apenas alguns, o método
+        // seria o PATCH
 
         const { id } = request.params;
 
@@ -99,7 +78,7 @@ class UserController
 
         try
         {
-            const user = await ShortenerModel.findByIdAndUpdate
+            const user = await UserModel.findByIdAndUpdate
             (
                 id,
                 {
@@ -115,19 +94,14 @@ class UserController
 
             response.json( { user });
         }
-        catch(error)
-        // meio Pokémon, mas é pra não derrubar a aplicação
+        catch(err)
         {
-            console.log(error.message);
-            response.status(400).json({ message: "Unexpected error" });
+            if (err.name === "CastError")
+            {
+                throw Error("Invalid ID; user not found");
+            }
+            else { next(err); }
         } 
-
-        // E se tivesse outros campos? Eu deveria aceitar, ou foge
-        // ao escopo do PUT?
-
-        // Reciprocamente: se novos campos houvessem sido adicionados
-        // posteriormente com o PATCH, o PUT também deveria passar a
-        // exigir a atualização deles?
     }  // PUT
 
 
@@ -172,20 +146,25 @@ class UserController
         {
             const user = await UserModel.findById(id);
 
-            if (user)
+            if (!user)
             {
-                await user.remove();
-                // findByIdAndDelete vs ...Remove?
-
-                return response.json({ message: "User removed" });
+                throw Error("User not found");
             }
 
-            response.status(404).json({ message: "User not found" });
+           await user.remove();
+            // findByIdAndDelete vs ...Remove?
+
+            return response.json({ message: "User removed" });
         }
         catch(error)
         {
-            console.log(error.message);
-            response.status(400).json({ message: "Unexpected error" });
+            if (err.name === "CastError")
+            {
+                throw Error("Invalid ID; user not found");
+                // explicitando aqui p/ diferenciar de um eventual
+                // CastError em outra função no futuro
+            }
+            else { next(err); }
         }
         
     }  // DELETE
