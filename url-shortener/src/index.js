@@ -87,11 +87,14 @@ app.use((error, request, response, next) =>
     // (o stack trace já começa com essa linha)
 
     // Respostas a tipos específicos de erros:
-    if (error.message === "User not found" || 
-        error.message === "Invalid ID; user not found" ||
-        error.message === "Link not found")
+    if (error.message === "Not found")
     {
         return response.status(404).json({ message: error.message });
+    }
+
+    if (error.name === "CastError")
+    {
+        return response.status(404).json({ message: "Invalid ID" });
     }
 
     if (error.name === "ValidationError" ||

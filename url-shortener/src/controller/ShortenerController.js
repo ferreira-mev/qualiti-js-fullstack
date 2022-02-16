@@ -16,27 +16,14 @@ class ShortenerController
     {
         const { id } = request.params;
 
-        
-        try
-        {
-            const shortenedLink = await ShortenerModel.findById(id);
+        const shortenedLink = await ShortenerModel.findById(id);
 
-            if (!shortenedLink)
-            {
-                throw Error("Link not found");
-            }
-
-            return response.json({ shortenedLink });   
-        }
-        catch(err)
+        if (!shortenedLink)
         {
-            if (err.name === "CastError")
-            {
-                throw Error("Invalid ID; link not found");
-            }
-            else { next(err); }
+            throw Error("Not found");
         }
 
+        return response.json({ shortenedLink });   
     }
 
     async store(request, response)
@@ -63,60 +50,38 @@ class ShortenerController
         const { id } = request.params;
         const { link, name, expirationDate } = request.body;
 
-        try
-        {
-            const shortenedLink = await ShortenerModel.findByIdAndUpdate
-            (
-                id,
-                {
-                    link,
-                    name,
-                    expirationDate
-                },
-                { new: true }
-                // retorna a versão modificada; cf.
-                // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
-            );
-
-            // O que acontece se não achar? P/ eu usar 404
-            response.json( { shortenedLink });
-        }
-        catch(error)
-        {
-            if (err.name === "CastError")
+        const shortenedLink = await ShortenerModel.findByIdAndUpdate
+        (
+            id,
             {
-                throw Error("Invalid ID; link not found");
-            }
-            else { next(err); }
-        } 
+                link,
+                name,
+                expirationDate
+            },
+            { new: true }
+            // retorna a versão modificada; cf.
+            // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
+        );
+
+        // O que acontece se não achar? P/ eu usar 404
+        response.json( { shortenedLink });
     }
 
     async remove(request, response) 
     {
         const { id } = request.params;
 
-        try
+        const shortenedLink = await ShortenerModel.findById(id);
+
+        if (!shortenedLink)
         {
-            const shortenedLink = await ShortenerModel.findById(id);
-
-            if (!shortenedLink)
-            {
-                throw Error("Link not found");
-            }
-
-            await shortenedLink.remove();
-            // findByIdAndDelete vs ...Remove?
-
-            return response.json({ message: "Link removed" });
+            throw Error("Not found");
         }
-        catch(error)
-        {
-            if (err.name === "CastError")
-            {
-                throw Error("Invalid ID; link not found");
-            }
-            else { next(err); }
-        }
+
+        await shortenedLink.remove();
+        // findByIdAndDelete vs ...Remove?
+
+        return response.json({ message: "Link removed" });
     }
 
     async redirect(request, response)
@@ -137,7 +102,7 @@ class ShortenerController
 
         if (!shortenedLink)
         {
-            throw Error("Link not found");
+            throw Error("Not found");
         }
 
         if (shortenedLink.expired)

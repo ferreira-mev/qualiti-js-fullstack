@@ -19,21 +19,11 @@ class UserController
     {
         const { id } = request.params;
         
-        try
-        {
-            const user = await UserModel.findById(id);
-        }
-        catch(err)
-        {
-            if (err.name === "CastError")
-            {
-                throw Error("Invalid ID; user not found");
-            }
-        }
-
+        const user = await UserModel.findById(id);
+        
         if (!user)
         {
-            throw Error("User not found");
+            throw Error("Not found");
         }
 
         response.json({ user });
@@ -76,32 +66,21 @@ class UserController
 
         const { name, email, password, phones } = request.body;
 
-        try
-        {
-            const user = await UserModel.findByIdAndUpdate
-            (
-                id,
-                {
-                    name,
-                    email,
-                    password,
-                    phones
-                },
-                { new: true }
-                // retorna a versão modificada; cf.
-                // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
-            );
-
-            response.json( { user });
-        }
-        catch(err)
-        {
-            if (err.name === "CastError")
+        const user = await UserModel.findByIdAndUpdate
+        (
+            id,
             {
-                throw Error("Invalid ID; user not found");
-            }
-            else { next(err); }
-        } 
+                name,
+                email,
+                password,
+                phones
+            },
+            { new: true }
+            // retorna a versão modificada; cf.
+            // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
+        );
+
+        response.json( { user }); 
     }  // PUT
 
 
@@ -111,7 +90,7 @@ class UserController
 
     //     if (userIndex == -1)  // usuário não encontrado
     //     {
-    //         return response.status(404).send("User not found");
+    //         return response.status(404).send("Not found");
     //     }
 
     //     request.body.id = users[userIndex].id;
@@ -142,30 +121,17 @@ class UserController
     {
         const { id } = request.params;
 
-        try
+        const user = await UserModel.findById(id);
+
+        if (!user)
         {
-            const user = await UserModel.findById(id);
-
-            if (!user)
-            {
-                throw Error("User not found");
-            }
-
-           await user.remove();
-            // findByIdAndDelete vs ...Remove?
-
-            return response.json({ message: "User removed" });
+            throw Error("Not found");
         }
-        catch(error)
-        {
-            if (err.name === "CastError")
-            {
-                throw Error("Invalid ID; user not found");
-                // explicitando aqui p/ diferenciar de um eventual
-                // CastError em outra função no futuro
-            }
-            else { next(err); }
-        }
+
+        await user.remove();
+        // findByIdAndDelete vs ...Remove?
+
+        return response.json({ message: "User removed" });
         
     }  // DELETE
 
