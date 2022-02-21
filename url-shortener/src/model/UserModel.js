@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 
-// Tarefa da aula 10: criar esquema com
-// Name, Email, Role: Administrator / User, Password, Created At, Modified At, Phones: 123, 123 
-
 const UserSchema = mongoose.Schema
 (
     {
@@ -16,7 +13,7 @@ const UserSchema = mongoose.Schema
             enum: ["user", "administrator"],
             default: "user" 
         },
-        // (ambas as strings em lowercase pra facilitar comparações)
+        // (deixei email e role em lowercase pra facilitar comparações)
         password: { type: String, required: true },
         phones: [{ type: String }]
         // Could I use regex here to ensure these contain numbers,

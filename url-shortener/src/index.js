@@ -11,6 +11,7 @@ on this specific lib, but instructive nonetheless)
 
 import UserRouter from "./routes/UserRouter.js";
 import ShortenerRouter from "./routes/ShortenerRouter.js";
+import {AuthMiddleware} from "./middlewares/auth.middleware.js";
 
 // COMMON JS
 // IMPORT -> const express = require("express")
@@ -60,6 +61,7 @@ app.use(morgan("dev"));
 //     next();
 // });
 
+app.use(AuthMiddleware);
 app.use("/api", UserRouter);
 app.use(ShortenerRouter);
 
@@ -71,6 +73,7 @@ app.use(ShortenerRouter);
 // está da forma ideal (ver TODOs), mas já é melhor que colocar 
 // try... catch em todos os métodos das classes controladoras, ou 
 // que não tratar
+// TODO mover p/ arquivo separado
 app.use((error, request, response, next) =>
 {
     // TODO: tratar mais tipos de erros
@@ -102,6 +105,11 @@ app.use((error, request, response, next) =>
     {
         return response.status(403).json({ message: error.message });
         // Qual seria o código de erro mais adequado aqui?
+    }
+
+    if (error.message === "Unauthorized")
+    {
+        return response.status(401).json({ message: error.message });
     }
 
     // Resposta genérica (o default do switch):

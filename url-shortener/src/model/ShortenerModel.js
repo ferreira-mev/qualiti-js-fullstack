@@ -5,6 +5,7 @@ const ShortenerSchema = mongoose.Schema
     {
         link: { type: String, required: true },
         hash: { type: String, required: true },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
         expired: { type: Boolean, default: false },
         // não faria sentido criar expirado
         // análogo ao atributo derivado no relacional
@@ -20,6 +21,6 @@ const ShortenerSchema = mongoose.Schema
     }
 );
 
-const ShortenerModel = mongoose.model("shortener", ShortenerSchema);
+const ShortenerModel = mongoose.model("links", ShortenerSchema);
 
 export default ShortenerModel;

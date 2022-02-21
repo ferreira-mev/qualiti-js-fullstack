@@ -1,12 +1,16 @@
-import crypto from "crypto";  // geração de UUIDs
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
 import UserModel from "../model/UserModel.js";
 
+dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET;
+// dentro ou fora da classe?
+
 class UserController
 {
-    static hashPassword(password)
+    static async hashPassword(password)
     {
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hash(password, salt);
@@ -18,6 +22,8 @@ class UserController
     }
 
     // Retorna JSON com todos os usuários:
+    // (Para fins didáticos e de debug, já que nenhum usuário deveria
+    // ter esse nível de acesso)
     async index(request, response) 
     {
         const users = await UserModel.find().lean();
@@ -25,27 +31,25 @@ class UserController
         response.json({ users });
     }  // getAll (GET)
 
-    // Retorna JSON com o usuário cujo ID é passado como
-    // parâmetro na URL, caso haja:
+    // Consulta do usuário ao próprio cadastro:
     async getOne(request, response) 
     {
         const { id } = request.params;
         
         const user = await UserModel.findById(id);
         
-        if (!user)
+        if (!user || user._id != request.loggedUser._id)
         {
             throw Error("Not found");
         }
 
         response.json({ user });
     }  // GET
-
-    // Insere novo usuário, com ID gerado aleatoriamente:
+    // Insere novo usuário (cadastro), com ID gerado aleatoriamente:
     async store(request, response) 
     {
         // Por que não usar
-        // const user = {...request.body, id: crypto.randomUUID()}; ?
+        // const user = {...request.body}; ?
 
         // Porque, não tendo esquema, BD não relacional aceita qqr 
         // chave que seja passada; melhor ser explícito:
@@ -56,35 +60,29 @@ class UserController
             email: request.body.email,
             password: await UserController.hashPassword(request.body.password),
             phones: request.body.phones // || []
-            // (não precisa do ou, se não passar é um array
-            // vazio por padrão)
-            // como estamos recebendo o(s) telefone(s)?
+            // (não precisa do ou comentado acima; se não passar é um
+            // array vazio por padrão)
         });
 
-        response.json({ user });
-        
+        response.json({ user });        
     } // POST
 
-    // Atualiza a entrada referente ao usuário cujo ID é indicado
-    // no body, caso haja:
-    // (HW: Retornar usuário atualizado ou 404 com mensagem)
+    // Atualização de cadastro:
     async update(request, response, next)
     {
         // Obs: foi dito em aula que o método PUT deveria atualizar 
         // todos os campos; para atualizar apenas alguns, o método
         // seria o PATCH
 
-        const { id } = request.params;
-
         const { name, email, password, phones } = request.body;
 
         const user = await UserModel.findByIdAndUpdate
         (
-            id,
+            request.loggedUser._id,
             {
                 name,
                 email,
-                password: await this.hashPassword(password),
+                password: await UserController.hashPassword(password),
                 phones
             },
             { new: true }
@@ -92,7 +90,9 @@ class UserController
             // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
         );
 
-        response.json( { user }); 
+        response.json( { user });
+
+        // O que acontece se não achar, p/ eu usar 404?
     }  // PUT
 
 
@@ -126,14 +126,10 @@ class UserController
 
     // },  // PATCH
 
-    // Remove a entrada referente ao usuário cujo ID é indicado
-    // no body, caso haja:
-    // (HW: Retornar 200 se conseguir deletar ou 404 se não existir)
+    // Remoção de cadastro:
     async remove(request, response) 
     {
-        const { id } = request.params;
-
-        const user = await UserModel.findById(id);
+        const user = await UserModel.findById(request.loggedUser._id);
 
         if (!user)
         {
@@ -152,8 +148,8 @@ class UserController
         const { email, password } = request.body;
 
         // Avisar se o erro está na senha ou no
-        // usuário é falha de segurança
-        // "Por fins didáticos" (- tio Keven), vamos falhar
+        // usuário é falha de segurança; "por fins didáticos" 
+        // (- tio Keven), vamos falhar
 
         const user = await UserModel.findOne({ "email": email }).lean();
         // lean() extrai o que é interno ao mongoose e extrai apenas os
@@ -165,6 +161,9 @@ class UserController
 
             // (Eu deveria jogar isso p/ o middleware que é handler
             // geral?)
+            // (Acho que por enquanto não, porque não quero criar essas
+            // categorias de erro definitivamente; pretendo dar refactor
+            // pra forma mais segura)
         }
 
         if (!bcrypt.compareSync(password, user.password))
@@ -174,7 +173,7 @@ class UserController
 
         delete user.password;
 
-        const token = jwt.sign(user, "url-shortener");
+        const token = jwt.sign(user, JWT_SECRET);
         // O token está em base 64 e fica armazenado no cliente, podendo
         // ser facilmente convertido p/ um formato human readable (ex:
         // jwt.io); então, não deve conter informações sensíveis como a
@@ -187,14 +186,36 @@ class UserController
         // Outro problema de segurança: nosso token atualmente não 
         // expira.
 
-        return response.send(token);
+        return response.send({token});
         
     }
 
     // (API não costuma ter logout, só front-end)
-    // Agora falta um middleware de controle de acesso para restringir 
-    // determinadas rotas apenas a usuários autenticados
 
 }
 
 export default UserController;
+
+/* P/ fins de testagem manual:
+
+(pw 12345)
+"user": {
+        "_id": "6213dc130ce1984bfeaf5ec8",
+        "name": "Eduarda Ferreira",
+        "email": "eduarda@ferreira.com",
+        "role": "user",
+        "password": "$2a$10$amadrOZWlNtVWUcyl4fJaelOTeKpg.O2415RFpgq1gCaQlhnlDaV6",
+        "phones": [
+            "8034-901-12",
+            "93032-5403"
+        ],
+        "createdAt": "2022-02-21T18:38:11.469Z",
+        "updatedAt": "2022-02-21T18:44:33.440Z",
+        "__v": 0
+    }
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjEzZGMxMzBjZTE5ODRiZmVhZjVlYzgiLCJuYW1lIjoiRWR1YXJkYSBGZXJyZWlyYSIsImVtYWlsIjoiZWR1YXJkYUBmZXJyZWlyYS5jb20iLCJyb2xlIjoidXNlciIsInBob25lcyI6WyI4MDM0LTkwMS0xMiJdLCJjcmVhdGVkQXQiOiIyMDIyLTAyLTIxVDE4OjM4OjExLjQ2OVoiLCJ1cGRhdGVkQXQiOiIyMDIyLTAyLTIxVDE4OjM4OjExLjQ2OVoiLCJfX3YiOjAsImlhdCI6MTY0NTQ2ODk3M30.iZtckG4Fr3mjGwKrc5HjPoR_NGh8mZ6aG8fKQyb3fmQ"
+}
+
+*/
