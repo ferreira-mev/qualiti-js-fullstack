@@ -14,7 +14,7 @@ class ShortenerController
         ).lean();
 
         response.json({ shortenedLinks });
-    }
+    }  // GET (all)
 
     async getOne(request, response) 
     {
@@ -28,7 +28,7 @@ class ShortenerController
         }
 
         return response.json({ shortenedLink });   
-    }
+    }  // GET (one)
 
     async store(request, response)
     {
@@ -52,7 +52,7 @@ class ShortenerController
         });
 
         response.json({ shortenedLink });
-    }
+    }  // POST
 
     async update(request, response)
     {
@@ -75,14 +75,18 @@ class ShortenerController
             // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
         );
 
-        response.json( { shortenedLink });
+        if (!shortenedLink)
+        {
+            throw Error("Not found");
+        }
 
-        // O que acontece se não achar, p/ eu usar 404?
         // (me parece mais seguro tratar "link não é seu" igual a
         // "link não encontrado"; assim, um usuário malicioso sequer 
         // saberia se o ID em questão corresponde a algo existente no
         // banco de dados)
-    }
+
+        response.json( { shortenedLink });
+    }  // PUT
 
     async remove(request, response) 
     {
@@ -98,7 +102,7 @@ class ShortenerController
         await shortenedLink.remove();
 
         return response.json({ message: "Link removed" });
-    }
+    }  // DELETE
 
     // Redireciona do link encurtado p/ o link original
     async redirect(request, response)
@@ -134,7 +138,7 @@ class ShortenerController
         await shortenedLink.save();
 
         return response.redirect(shortenedLink.link);    
-    }
+    }  // GET (link)
 }
 
 export default ShortenerController;

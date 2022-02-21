@@ -90,9 +90,12 @@ class UserController
             // https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate
         );
 
-        response.json( { user });
+        if (!user)
+        {
+            throw Error("Not found");
+        }
 
-        // O que acontece se não achar, p/ eu usar 404?
+        response.json( { user });
     }  // PUT
 
 
